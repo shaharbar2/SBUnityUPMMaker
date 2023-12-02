@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
@@ -78,7 +79,7 @@ namespace Shahar.Bar.Utils
 
         private void ParsePackageJson(string json)
         {
-            PackageJson packageData = JsonUtility.FromJson<PackageJson>(json);
+            var packageData = JsonUtility.FromJson<PackageJson>(json);
     
             if (packageData != null)
             {
@@ -112,8 +113,7 @@ namespace Shahar.Bar.Utils
 
             if (!Directory.Exists(_sourceFolderPath))
             {
-                Debug.LogError("Source folder does not exist.");
-                return;
+                _sourceFolderPath = Application.dataPath;
             }
 
             Directory.CreateDirectory(_packageFolderPath);
@@ -210,15 +210,31 @@ namespace Shahar.Bar.Utils
             var folderPath = Path.Combine(_packageFolderPath, folderName);
             Directory.CreateDirectory(folderPath);
 
-            var asmdefContent = GenerateAsmdefContent(packageName, folderName, folderName == "Editor");
-            File.WriteAllText(Path.Combine(folderPath, $"{packageName}.{folderName}.asmdef"), asmdefContent);
-        }
+            var asmdefName = FormatPackageName(packageName, folderName);
+            var asmdefContent = GenerateAsmdefContent(asmdefName, folderName == "Editor");
+            File.WriteAllText(Path.Combine(folderPath, $"{asmdefName}.asmdef"), asmdefContent);
+        } 
 
-        private string GenerateAsmdefContent(string packageName, string folderName, bool onlyEditor)
+        public static string FormatPackageName(string packageName, string folderName)
+        {
+            var modifiedPackageName = packageName.Replace(".com", "");
+
+            var words = modifiedPackageName.Split('.');
+
+            for (var i = 0; i < words.Length; i++)
+            {
+                words[i] = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(words[i].ToLower());
+            }
+            
+            modifiedPackageName = string.Join(".", words);
+            return modifiedPackageName + "." + folderName;
+        }
+        
+        private string GenerateAsmdefContent(string asmdefName, bool onlyEditor)
         {
             var includeEditor = onlyEditor ? @"""Editor""" : "";
             return $@"{{
-  ""name"": ""{packageName.Replace(".com", "")}.{folderName}"",
+  ""name"": ""{asmdefName}"",
   ""references"": [],
   ""includePlatforms"": [{includeEditor}],
   ""excludePlatforms"": [],
