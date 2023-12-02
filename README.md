@@ -13,11 +13,15 @@
 
 Will be used to create upm packages
 ![img.png](img.png)
-
 ## Installation
+![OpenUPM](https://img.shields.io/badge/UPM-1.0.0-blue.svg)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/shaharbar2/SBUnityUPMMaker?label=latest%20release)
+- using OpenUPM: https://openupm.com/packages/com.sb.package-maker/
+- using git:
 
-To install this package, add the following line to the `dependencies` section of your project's `manifest.json` file:
-"com.sb.package-maker": "https://github.com/shaharbar2/SBTools.git?path=/Packages/com.sb.package-maker#main"
+  Add the following line to the `dependencies` section of your project's `manifest.json` file:
+  ```json 
+  "com.sb.package-maker": "https://github.com/shaharbar2/SBUnityUPMMaker.git?path=/Packages/com.sb.package-maker#main"
 
 ## Features
 
