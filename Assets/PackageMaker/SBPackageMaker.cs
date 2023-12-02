@@ -217,7 +217,7 @@ namespace Shahar.Bar.Utils
 
         public static string FormatPackageName(string packageName, string folderName)
         {
-            var modifiedPackageName = packageName.Replace(".com", "");
+            var modifiedPackageName = packageName.Replace("com.", "");
 
             var words = modifiedPackageName.Split('.');
 
@@ -226,8 +226,8 @@ namespace Shahar.Bar.Utils
                 words[i] = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(words[i].ToLower());
             }
             
-            modifiedPackageName = string.Join(".", words);
-            return modifiedPackageName + "." + folderName;
+            modifiedPackageName = string.Join("", words);
+            return modifiedPackageName + "_" + folderName;
         }
         
         private string GenerateAsmdefContent(string asmdefName, bool onlyEditor)

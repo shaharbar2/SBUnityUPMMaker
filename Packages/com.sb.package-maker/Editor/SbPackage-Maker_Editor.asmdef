@@ -1,5 +1,5 @@
 {
-  "name": "Com.Sb.Package-Maker.Editor",
+  "name": "SbPackage-Maker_Editor",
   "references": [],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
