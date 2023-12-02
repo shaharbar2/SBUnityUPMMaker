@@ -2,50 +2,46 @@
 ![Unity Version](https://img.shields.io/badge/Unity-2020.1+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9C%93-brightgreen.svg)
-![Git Commands](https://img.shields.io/badge/Git%20Commands-5-orange.svg)
 ![Last Updated](https://img.shields.io/badge/last%20updated-2023--12--01-lightgrey.svg)
 ![Platform](https://img.shields.io/badge/platform-Unity%20Editor-lightgrey.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/shaharbar2/SBTools)
 ![GitHub Repo stars](https://img.shields.io/github/stars/shaharbar2/SBTools?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/shaharbar2/SBTools?style=social)
 
-# SB Git Commander
 
-![img.png](Packages%2Fcom.sb.git-commander%2Fimg.png)
+# SB Package Maker
 
-![img_1.png](Packages%2Fcom.sb.git-commander%2Fimg_1.png)
+Will be used to create upm packages
 
-Tool for invoking git commands from editor
+![img.png](img.png)
+Will be used to create packages
 
 ## Installation
 
 To install this package, add the following line to the `dependencies` section of your project's `manifest.json` file:
-"com.sb.git-commander": "https://github.com/shaharbar2/SBTools.git?path=/Packages/com.sb.git-commander#main"
-
-# SB Git Commander
-
-`SBGitCommander` is a Unity Editor tool for executing Git commands within the Unity Editor.
-This tool is part of the `Shahar.Bar.Utils` namespace. and is designed to facilitate Git operations directly from the 
-Unity interface, enhancing the workflow for Unity developers who use Git for version control.
+"com.sb.package-maker": "https://github.com/shaharbar2/SBTools.git?path=/Packages/com.sb.package-maker#main"
 
 ## Features
 
-- **User Interface:** Provides a GUI within the Unity Editor to manage and execute Git commands.
-- **Command Management:** Enables users to add, edit, and delete custom Git commands.
-- **Command Execution:** Allows for the execution of Git commands and displays the output within the Unity Editor.
-- **Custom Command Storage:** Saves custom Git commands in a file for persistent access across sessions.
-- **Predefined Commands:** Includes default Git commands like Pull, Push, Status, Add All, and Commit.
+- **User Interface:** Offers a simple and intuitive GUI within the Unity Editor for setting up and creating UPM packages.
+- **Folder Selection:** Allows users to select the source folder containing the Unity project to be packaged.
+- **Package Configuration:** Users can specify package details like name, display name, description, and version.
+- **Automatic File Organization:** Classifies and organizes scripts into appropriate subfolders (Editor, Tests, Runtime) based on their content.
+- **Package.json Generation:** Automatically generates a `package.json` file with the specified package details.
+- **Assembly Definition Files:** Creates `.asmdef` files for different subfolders to ensure correct compilation and separation of code.
+- **License and Readme:** Generates a standard MIT license file and a README.md for the package with installation instructions.
 
 ## How to Use
 
-1. **Open S BGitCommander:** In Unity, navigate to `SBTools > Git Commander` to open the tool.
-2. **Manage Commands:** Add, edit, or delete Git commands using the provided interface.
-3. **Execute Commands:** Select a command from the dropdown list and click 'Invoke' to execute it. The output will be displayed in the tool's window.
+1. **Open SBPackageMaker:** In Unity, navigate to `SBTools > UPM Package Creator` to open the SBPackageMaker window.
+2. **Select Source Folder:** Click on 'Select Source Folder' to choose the folder containing your Unity project.
+3. **Configure Package:** Fill in the package details like name, display name, description, and version.
+4. **Create Package:** Click on 'Create Package' to generate the UPM package in the designated output directory.
 
 ## Requirements
 
-- Unity Editor (version 2020.1 or higher).
-- Git must be installed and accessible from the command line.
+- Unity 2020.1 or higher.
+- The tool must be placed within the Unity Editor project.
 
 ## Contributions
 
@@ -54,6 +50,6 @@ Feel free to fork and create Pull Requests.
 
 ## License
 
-`SBGitCommander` is distributed under the MIT License.
-For more details about the license, see the included 
-[LICENSE.md](Packages%2Fcom.sb.git-commander%2FLICENSE.md) file.
+This tool is distributed under the MIT License. See the included LICENSE.md file for more details.
+For more details about the license, see [LICENSE.md](LICENSE.md).
+
