@@ -122,7 +122,7 @@ namespace Shahar.Bar.Utils
             var testScripts = new List<(string, string)>();
             var runtimeScripts = new List<(string, string)>();
 
-            foreach (var filePath in Directory.GetFiles(_sourceFolderPath, "*.*", SearchOption.AllDirectories))
+            foreach (var filePath in Directory.GetFiles(_sourceFolderPath, "*.cs", SearchOption.AllDirectories))
             {
                 var fileContent = File.ReadAllText(filePath);
 
@@ -201,6 +201,7 @@ namespace Shahar.Bar.Utils
                 }
 
                 File.Copy(file.Item2, destinationFilePath, true);
+                File.Copy(file.Item2 +".meta", destinationFilePath +".meta", true);
             }
         }
 

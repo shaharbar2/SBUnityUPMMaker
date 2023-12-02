@@ -1,7 +1,0 @@
-{
-  "name": "com.sb.git-commander",
-  "version": "0.0.5",
-  "displayName": "SB Git Commander",
-  "description": "Tool for invoking git commands from editor",
-  "unity": "2020.1"
-}

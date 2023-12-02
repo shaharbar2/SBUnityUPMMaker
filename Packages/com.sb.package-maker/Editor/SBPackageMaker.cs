@@ -14,6 +14,9 @@ namespace Shahar.Bar.Utils
         private string _packageVersion = "1.0.0";
         private string _packageDisplayName;
         private string _packageDescription;
+        private string _licenseEntity;
+
+        private string _lastCheckedPackageName = "";
 
         [MenuItem("SBTools/UPM Package Creator")]
         private static void Init()
@@ -38,10 +41,23 @@ namespace Shahar.Bar.Utils
             }
 
             GUILayout.Label("Package Settings", EditorStyles.boldLabel);
-            _packageName = TextFieldWithPlaceholder("Name:", _packageName, "com.example.mypackage");
+
+            EditorGUI.BeginChangeCheck();
+            _packageName = EditorGUILayout.TextField("Name:", _packageName);
+            if (EditorGUI.EndChangeCheck())
+            {
+                // Check if the package name has changed and is not empty
+                if (!string.IsNullOrEmpty(_packageName) && _packageName != _lastCheckedPackageName)
+                {
+                    LoadPackageDataIfExists(_packageName);
+                    _lastCheckedPackageName = _packageName;
+                }
+            }
+            
             _packageDisplayName = TextFieldWithPlaceholder("Display Name:", _packageDisplayName, "My Package");
             _packageDescription = TextFieldWithPlaceholder("Description:", _packageDescription, "Description of what the package does.");
             _packageVersion = TextFieldWithPlaceholder("Version:", _packageVersion, "1.0.0");
+            _licenseEntity = TextFieldWithPlaceholder("License Entity:", _licenseEntity, "Shahar Bar (SBTools)");
 
             if (GUILayout.Button("Create Package"))
             {
@@ -49,7 +65,34 @@ namespace Shahar.Bar.Utils
             }
         }
 
+        private void LoadPackageDataIfExists(string packageName)
+        {
+            var packagePath = Path.Combine(Application.dataPath, "..", "Packages", packageName);
+            var packageJsonPath = Path.Combine(packagePath, "package.json");
 
+            if (!File.Exists(packageJsonPath)) return;
+            
+            var packageJson = File.ReadAllText(packageJsonPath);
+            ParsePackageJson(packageJson);
+        }
+
+        private void ParsePackageJson(string json)
+        {
+            PackageJson packageData = JsonUtility.FromJson<PackageJson>(json);
+    
+            if (packageData != null)
+            {
+                _packageName = packageData.name;
+                _packageVersion = packageData.version;
+                _packageDisplayName = packageData.displayName;
+                _packageDescription = packageData.description;
+            }
+            else
+            {
+                Debug.LogError("Failed to parse package.json");
+            }
+        }
+        
         private string TextFieldWithPlaceholder(string label, string value, string placeholder)
         {
             EditorGUI.BeginChangeCheck();
@@ -73,33 +116,30 @@ namespace Shahar.Bar.Utils
                 return;
             }
 
-            if (Directory.Exists(_packageFolderPath))
-            {
-                Directory.Delete(_packageFolderPath, true);
-            }
-
             Directory.CreateDirectory(_packageFolderPath);
 
-            var editorScripts = new List<string>();
-            var testScripts = new List<string>();
-            var runtimeScripts = new List<string>();
+            var editorScripts = new List<(string, string)>();
+            var testScripts = new List<(string, string)>();
+            var runtimeScripts = new List<(string, string)>();
 
             foreach (var filePath in Directory.GetFiles(_sourceFolderPath, "*.cs", SearchOption.AllDirectories))
             {
                 var fileContent = File.ReadAllText(filePath);
-                var fileName = Path.GetFileName(filePath);
+
+                var relativePath = filePath[(_sourceFolderPath.Length + 1)..];
+                var targetPath = Path.Combine(_packageFolderPath, relativePath);
 
                 if (fileContent.Contains("Editor"))
                 {
-                    editorScripts.Add(fileName);
+                    editorScripts.Add((targetPath, filePath));
                 }
                 else if (fileContent.Contains("Tests"))
                 {
-                    testScripts.Add(fileName);
+                    testScripts.Add((targetPath, filePath));
                 }
                 else
                 {
-                    runtimeScripts.Add(fileName);
+                    runtimeScripts.Add((targetPath, filePath));
                 }
             }
 
@@ -107,30 +147,61 @@ namespace Shahar.Bar.Utils
             CopyFilesToSubfolder(testScripts, "Tests");
             CopyFilesToSubfolder(runtimeScripts, "Runtime");
 
-            string packageJson = GeneratePackageJson();
-            File.WriteAllText(Path.Combine(_packageFolderPath, "package.json"), packageJson);
+            if (string.IsNullOrEmpty(_packageVersion))
+            {
+                var parts = _packageVersion.Split('.');
+                parts[^1] = (int.Parse(parts[^1]) + 1).ToString();
+                _packageVersion = string.Join(".", parts);
+            }
 
-            CreateLicenseFile();
-            CreateReadmeFile();
+            if (ShouldGenerateFile("package.json"))
+            {
+                var packageJson = GeneratePackageJson();
+                File.WriteAllText(Path.Combine(_packageFolderPath, "package.json"), packageJson);
+            }
+
+            if (ShouldGenerateFile("LICENSE.md"))
+            {
+                CreateLicenseFile();
+            }
+
+            if (ShouldGenerateFile("README.md"))
+            {
+                CreateReadmeFile();
+            }
 
             AssetDatabase.Refresh();
-
             Debug.Log("Package created successfully.");
         }
 
-        private void CopyFilesToSubfolder(List<string> files, string subfolderName)
+        private bool ShouldGenerateFile(string fileName)
+        {
+            var filePath = Path.Combine(_packageFolderPath, fileName);
+            return !File.Exists(filePath) || EditorUtility.DisplayDialog("File Exists", $"The file {fileName} already exists. Do you want to overwrite it?", "Yes", "No");
+        }
+
+        private void CopyFilesToSubfolder(List<(string, string)> files, string subfolderName)
         {
             if (files.Count == 0) return;
 
             var subfolderPath = Path.Combine(_packageFolderPath, subfolderName);
             Directory.CreateDirectory(subfolderPath);
+
             CreateSubfolderAndAsmdef(subfolderName, _packageName);
 
             foreach (var file in files)
             {
-                var sourceFilePath = Path.Combine(_sourceFolderPath, file);
-                var destinationFilePath = Path.Combine(subfolderPath, file);
-                File.Copy(sourceFilePath, destinationFilePath, true);
+                var destinationFilePath = Path.Combine(subfolderPath, Path.GetFileName(file.Item1));
+                if (File.Exists(destinationFilePath))
+                {
+                    if (!EditorUtility.DisplayDialog("File Exists", $"The file {Path.GetFileName(destinationFilePath)} already exists. Do you want to overwrite it?", "Yes", "No"))
+                    {
+                        continue;
+                    }
+                }
+
+                File.Copy(file.Item2, destinationFilePath, true);
+                File.Copy(file.Item2 +".meta", destinationFilePath +".meta", true);
             }
         }
 
@@ -147,7 +218,7 @@ namespace Shahar.Bar.Utils
         {
             var includeEditor = onlyEditor ? @"""Editor""" : "";
             return $@"{{
-  ""name"": ""{packageName}.{folderName}"",
+  ""name"": ""{packageName.Replace(".com", "")}.{folderName}"",
   ""references"": [],
   ""includePlatforms"": [{includeEditor}],
   ""excludePlatforms"": [],
@@ -170,20 +241,11 @@ namespace Shahar.Bar.Utils
   ""dependencies"": {{}}
 }}";
 
-        private static void CopyFiles(string sourcePath, string destinationPath)
-        {
-            foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-                Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
-
-            foreach (var newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
-        }
-
         private void CreateLicenseFile()
         {
-            string licenseText = $@"MIT License
+            var licenseText = $@"MIT License
 
-Copyright (c) {DateTime.Now.Year} Shahar Bar (SBTools)
+Copyright (c) {DateTime.Now.Year} Shahar Bar {_licenseEntity}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the ""Software""), to deal
@@ -208,7 +270,7 @@ SOFTWARE.";
 
         private void CreateReadmeFile()
         {
-            string readmeText = $@"# {_packageDisplayName}
+            var readmeText = $@"# {_packageDisplayName}
 
 {_packageDescription}
 
@@ -216,8 +278,17 @@ SOFTWARE.";
 
 To install this package, add the following line to the `dependencies` section of your project's `manifest.json` file:
 ""{_packageName}"": ""https://github.com/shaharbar2/SBTools.git?path=/Packages/{_packageName}#main""";
-                
-                File.WriteAllText(Path.Combine(_packageFolderPath, "README.md"), readmeText);
+
+            File.WriteAllText(Path.Combine(_packageFolderPath, "README.md"), readmeText);
         }
+    }
+    
+    [Serializable]
+    public class PackageJson
+    {
+        public string name;
+        public string version;
+        public string displayName;
+        public string description;
     }
 }

@@ -1,11 +1,5 @@
 {
   "dependencies": {
-    "com.sb.git-commander": {
-      "version": "file:com.sb.git-commander",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
-    },
     "com.sb.package-maker": {
       "version": "file:com.sb.package-maker",
       "depth": 0,
