@@ -12,9 +12,7 @@
 # SB Package Maker
 
 Will be used to create upm packages
-
 ![img.png](img.png)
-Will be used to create packages
 
 ## Installation
 
@@ -51,5 +49,5 @@ Feel free to fork and create Pull Requests.
 ## License
 
 This tool is distributed under the MIT License. See the included LICENSE.md file for more details.
-For more details about the license, see [LICENSE.md](LICENSE.md).
-
+For more details about the license, see
+[LICENSE.md](Packages%2Fcom.sb.package-maker%2FLICENSE.md)
